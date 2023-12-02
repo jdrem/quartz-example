@@ -1,7 +1,7 @@
-package net.remgant.app;
+package net.remgant.quartz.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import net.remgant.secheduling.JobScheduler;
+import net.remgant.quartz.scheduler.JobScheduler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
