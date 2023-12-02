@@ -3,12 +3,14 @@ package net.remgant.secheduling;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -16,6 +18,12 @@ import static org.quartz.TriggerBuilder.newTrigger;
 @Component
 @Slf4j
 public class JobScheduler {
+
+    private static final Random random = new Random();
+    Supplier<String> randomString = () -> random.ints(97, 122)
+            .limit(8)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .toString();
 
     Scheduler scheduler;
     public JobScheduler() {
@@ -34,12 +42,13 @@ public class JobScheduler {
                 ZonedDateTime::from);
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("eventMap", map);
+        String id = randomString.get();
         JobDetail job = newJob(SimpleJob.class)
-                .withIdentity("simple job", "group1")
+                .withIdentity("J"+id, "Event Group")
                 .usingJobData(jobDataMap)
                 .build();
         Trigger trigger = newTrigger()
-                .withIdentity("simple Trigger", "group1")
+                .withIdentity("T"+id, "group1")
                 .startAt(Date.from(triggerDateTime.toInstant()))
                 .build();
         try {
@@ -49,6 +58,33 @@ public class JobScheduler {
             throw new RuntimeException(e);
         }
         log.info("job scheduled for {}", triggerDateTime);
+    }
+
+    public Map<String, Object> listAllSchedules() {
+        Set<JobKey> jobKeySet = null;
+        try {
+            jobKeySet = scheduler.getJobKeys(GroupMatcher.anyGroup());
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+        List<Map<String,Object>> resultList = (List<Map<String, Object>>) jobKeySet.stream().map(jk -> {
+            try {
+                JobDetail jobDetail = scheduler.getJobDetail(jk);
+                log.info("Job Name: {}", jk.getName());
+                @SuppressWarnings("unchecked")
+                List<Trigger> triggerList = (List<Trigger>) scheduler.getTriggersOfJob(jobDetail.getKey());
+                String nextFireTime = DateTimeFormatter.ISO_INSTANT.format(triggerList.get(0).getNextFireTime().toInstant());
+                log.info("Trigger: {}", nextFireTime);
+                return Optional.of(Map.of("jobName", jk.getName(), "nextFireTime", nextFireTime));
+            } catch (Exception e) {
+                log.warn("getting job details", e);
+            }
+            return Optional.empty();
+        })
+                .filter(o -> o.isPresent())
+                .map(o -> o.get())
+                .collect(Collectors.toList());
+        return Map.of("results", resultList);
     }
 
     @Slf4j

@@ -19,6 +19,11 @@ public class Controller {
         this.jobScheduler = jobScheduler;
     }
 
+    @RequestMapping(value = "/schedules", method = RequestMethod.GET)
+    public ResponseEntity<Map<String,Object>> schedules() {
+        Map<String,Object> result = jobScheduler.listAllSchedules();
+        return ResponseEntity.ok(result);
+    }
     @RequestMapping(value="/schedule/event", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> scheduleEvent(@RequestBody Map<String,Object> event) {
         jobScheduler.scheduleJob(event);
