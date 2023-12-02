@@ -1,6 +1,7 @@
 package net.remgant.app;
 
 import net.remgant.secheduling.JobScheduler;
+import org.quartz.Scheduler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +13,7 @@ public class Application {
     }
 
     @Bean
-    public JobScheduler jobScheduler() {
-        return new JobScheduler();
+    public JobScheduler jobScheduler(Scheduler scheduler) {
+        return new JobScheduler(scheduler);
     }
 }

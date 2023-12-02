@@ -26,16 +26,10 @@ public class JobScheduler {
             .toString();
 
     Scheduler scheduler;
-    public JobScheduler() {
-        try {
-            scheduler = StdSchedulerFactory.getDefaultScheduler();
-            scheduler.start();
-            log.info("Scheculer started");
-        } catch (SchedulerException e) {
-            log.error("error starting scheduler", e);
-            throw new RuntimeException(e);
-        }
+    public JobScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
     }
+
     public void scheduleJob(Map<String,Object> map) {
         ZonedDateTime triggerDateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse((String)map
                         .getOrDefault("startDate", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now())),
