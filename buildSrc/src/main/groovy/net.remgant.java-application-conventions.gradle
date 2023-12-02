@@ -18,5 +18,7 @@ dependencyManagement {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-quartz'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
+    runtimeOnly 'org.hsqldb:hsqldb:2.7.1'
 }
