@@ -25,7 +25,7 @@ public class JobScheduler {
             .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
             .toString();
 
-    Scheduler scheduler;
+    final private Scheduler scheduler;
     public JobScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
