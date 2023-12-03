@@ -9,6 +9,14 @@ plugins {
     id 'application'
 }
 
+//configurations {
+//    all {
+//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//        exclude group: 'ch.qos.logback', module: 'logback-classic'
+//        exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+//    }
+//}
+
 dependencyManagement {
     imports {
         mavenBom 'org.springframework.boot:spring-boot-dependencies:3.2.0'
@@ -20,5 +28,5 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-quartz'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
-    runtimeOnly 'org.hsqldb:hsqldb:2.7.1'
+    runtimeOnly 'com.mysql:mysql-connector-j:8.2.0'
 }
