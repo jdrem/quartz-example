@@ -26,9 +26,20 @@ public class Controller {
     }
     @RequestMapping(value="/schedule/event", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> scheduleEvent(@RequestBody Map<String,Object> event) {
-        jobScheduler.scheduleJob(event);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        Map<String,Object> result = jobScheduler.scheduleJob(event);
+        return ResponseEntity.ok(result);
     }
 
+    @ResponseStatus(code = HttpStatus.NOT_FOUND)
+    private static class NotFoundException extends RuntimeException {}
+
+    @RequestMapping(value = "/schedule/event/{jobKey}", method = RequestMethod.DELETE)
+    // Need to explicitly declare path variable name due to https://youtrack.jetbrains.com/issue/IDEA-339211
+    public ResponseEntity<Map<String,Object>> deleteEvent(@PathVariable("jobKey") String jobKey) {
+        if (jobScheduler.deleteJob(jobKey))
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        else
+            throw new NotFoundException();
+    }
 }
 

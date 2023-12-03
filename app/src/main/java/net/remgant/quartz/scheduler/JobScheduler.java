@@ -30,7 +30,7 @@ public class JobScheduler {
         this.scheduler = scheduler;
     }
 
-    public void scheduleJob(Map<String,Object> map) {
+    public Map<String,Object> scheduleJob(Map<String,Object> map) {
         ZonedDateTime triggerDateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse((String)map
                         .getOrDefault("startDate", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now())),
                 ZonedDateTime::from);
@@ -38,7 +38,7 @@ public class JobScheduler {
         jobDataMap.put("eventMap", map);
         String id = randomString.get();
         JobDetail job = newJob(SimpleJob.class)
-                .withIdentity("J"+id, "Event Group")
+                .withIdentity("J"+id)
                 .usingJobData(jobDataMap)
                 .build();
         Trigger trigger = newTrigger()
@@ -51,7 +51,8 @@ public class JobScheduler {
             log.error("Error scheduling", e);
             throw new RuntimeException(e);
         }
-        log.info("job scheduled for {}", triggerDateTime);
+        log.info("job scheduled for {}, key {}, group {}", triggerDateTime, job.getKey().getName(), job.getKey().getGroup());
+        return Map.of("name", job.getKey().getName(), "group", job.getKey().getGroup());
     }
 
     public Map<String, Object> listAllSchedules() {
@@ -79,6 +80,21 @@ public class JobScheduler {
                 .map(o -> o.get())
                 .collect(Collectors.toList());
         return Map.of("results", resultList);
+    }
+
+    public boolean deleteJob(String jobKey) {
+        try {
+            if (scheduler.deleteJob(new JobKey(jobKey, "DEFAULT"))) {
+                log.info("Job {} deleted", jobKey);
+                return true;
+            } else {
+                log.info("Job {} not deleted, not found", jobKey);
+                return false;
+            }
+        } catch (SchedulerException e) {
+            log.error("Deleting job {}", jobKey, e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Slf4j
