@@ -18,12 +18,8 @@ import static org.quartz.TriggerBuilder.newTrigger;
 public class JobScheduler {
 
     private static final Random random = new Random();
-    Supplier<String> randomString = () -> random.ints(97, 122)
-            .limit(8)
-            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-            .toString();
-
     final private Scheduler scheduler;
+
     public JobScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
@@ -33,7 +29,7 @@ public class JobScheduler {
                         .getOrDefault("startDate", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now())),
                 ZonedDateTime::from);
         JobDataMap jobDataMap = map.entrySet().stream().collect(JobDataMap::new, (m, es) -> m.put(es.getKey(), es.getValue()), JobDataMap::putAll);
-        String id = randomString.get();
+        String id = UUID.randomUUID().toString();
         JobDetail job = newJob(SimpleJob.class)
                 .withIdentity("J"+id)
                 .usingJobData(jobDataMap)
