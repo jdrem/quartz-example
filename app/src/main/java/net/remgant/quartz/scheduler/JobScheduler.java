@@ -2,7 +2,6 @@ package net.remgant.quartz.scheduler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
-import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +9,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -34,8 +32,7 @@ public class JobScheduler {
         ZonedDateTime triggerDateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse((String)map
                         .getOrDefault("startDate", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now())),
                 ZonedDateTime::from);
-        JobDataMap jobDataMap = new JobDataMap();
-        jobDataMap.put("eventMap", map);
+        JobDataMap jobDataMap = map.entrySet().stream().collect(JobDataMap::new, (m, es) -> m.put(es.getKey(), es.getValue()), JobDataMap::putAll);
         String id = randomString.get();
         JobDetail job = newJob(SimpleJob.class)
                 .withIdentity("J"+id)
@@ -56,12 +53,13 @@ public class JobScheduler {
     }
 
     public Map<String, Object> listAllSchedules() {
-        Set<JobKey> jobKeySet = null;
+        Set<JobKey> jobKeySet;
         try {
             jobKeySet = scheduler.getJobKeys(GroupMatcher.anyGroup());
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
         }
+        @SuppressWarnings("unchecked")
         List<Map<String,Object>> resultList = (List<Map<String, Object>>) jobKeySet.stream().map(jk -> {
             try {
                 JobDetail jobDetail = scheduler.getJobDetail(jk);
@@ -76,9 +74,9 @@ public class JobScheduler {
             }
             return Optional.empty();
         })
-                .filter(o -> o.isPresent())
+                .filter(Optional::isPresent)
                 .map(o -> o.get())
-                .collect(Collectors.toList());
+                .toList();
         return Map.of("results", resultList);
     }
 
@@ -104,9 +102,7 @@ public class JobScheduler {
         @Override
         public void execute(JobExecutionContext context) throws JobExecutionException {
             log.info("Running job {}", context.getJobDetail().getKey());
-            @SuppressWarnings("unchecked")
-            Map<String,Object> data = (Map<String, Object>) context.getMergedJobDataMap().getOrDefault("eventMap", Map.of());
-            data.forEach((key, value) -> log.info("Key: {}, value: {}", key, value));
+            context.getMergedJobDataMap().forEach((key, value) -> log.info("Key: {}, value: {}", key, value));
         }
     }
 }
