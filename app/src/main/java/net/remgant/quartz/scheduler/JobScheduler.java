@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -17,7 +16,6 @@ import static org.quartz.TriggerBuilder.newTrigger;
 @Slf4j
 public class JobScheduler {
 
-    private static final Random random = new Random();
     final private Scheduler scheduler;
 
     public JobScheduler(Scheduler scheduler) {
