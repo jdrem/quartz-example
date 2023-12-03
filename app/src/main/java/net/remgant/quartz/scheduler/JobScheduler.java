@@ -33,7 +33,7 @@ public class JobScheduler {
                 .usingJobData(jobDataMap)
                 .build();
         Trigger trigger = newTrigger()
-                .withIdentity("T"+id, "group1")
+                .withIdentity("T"+id)
                 .startAt(Date.from(triggerDateTime.toInstant()))
                 .build();
         try {
@@ -57,14 +57,13 @@ public class JobScheduler {
         List<Map<String,Object>> resultList = (List<Map<String, Object>>) jobKeySet.stream().map(jk -> {
             try {
                 JobDetail jobDetail = scheduler.getJobDetail(jk);
-                log.info("Job Name: {}", jk.getName());
                 @SuppressWarnings("unchecked")
                 List<Trigger> triggerList = (List<Trigger>) scheduler.getTriggersOfJob(jobDetail.getKey());
                 String nextFireTime = DateTimeFormatter.ISO_INSTANT.format(triggerList.get(0).getNextFireTime().toInstant());
-                log.info("Trigger: {}", nextFireTime);
+                log.info("Job Name: {}, Next Fire Time: {}", jk.getName(), nextFireTime);
                 return Optional.of(Map.of("jobName", jk.getName(), "nextFireTime", nextFireTime));
             } catch (Exception e) {
-                log.warn("getting job details", e);
+                log.warn("getting job details for {}", jk.getName(), e);
             }
             return Optional.empty();
         })
