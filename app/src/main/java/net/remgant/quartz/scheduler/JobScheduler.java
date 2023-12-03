@@ -75,7 +75,7 @@ public class JobScheduler {
             return Optional.empty();
         })
                 .filter(Optional::isPresent)
-                .map(o -> o.get())
+                .map(Optional::get)
                 .toList();
         return Map.of("results", resultList);
     }
