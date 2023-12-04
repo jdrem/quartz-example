@@ -1,6 +1,6 @@
 ## Quartz Microservice Example
 
-# Building and Running
+### Building and Running
 Start a docker instance of mysql:
 ```bash
 docker run --name mysql-quartz \
@@ -25,7 +25,7 @@ Run an instance on port 8084:
 ```bash
 java -cp "lib/*" -Dserver.port=8084 net.remgant.quartz.Application
 ```
-#Creating a Scheduled Event
+### Creating, Viewing and Deleting Events.
 ```bash
 curl -verbose -H "Content-Type: application/json" \
 http://localhost:8084/api/schedule/event \
