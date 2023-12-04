@@ -42,7 +42,7 @@ curl http://localhost:8084/api/schedules
 ```
 Gives the result:
 ```json lines
-{"results":[{"jobName":"J2bae6892-83d6-4961-92b6-da171f23d742","nextFireTime":"2023-12-03T12:20:00Z"}]}
+{"results":[{"jobName":"J5e245237-8304-498f-a256-3f67ba43b600","nextFireTime":"2023-12-03T12:20:00Z"}]}
 ```
 Delete a scheduled event:
 ```bash
