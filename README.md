@@ -26,6 +26,7 @@ Run an instance on port 8084:
 java -cp "lib/*" -Dserver.port=8084 net.remgant.quartz.Application
 ```
 ### Creating, Viewing and Deleting Events.
+Create an event. Needs a **starTime** to be specified, everything else will be passed to the Quartz job.
 ```bash
 curl -verbose -H "Content-Type: application/json" \
 http://localhost:8084/api/schedule/event \
