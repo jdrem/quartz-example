@@ -5,7 +5,7 @@ import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -23,9 +23,8 @@ public class JobScheduler {
     }
 
     public Map<String,Object> scheduleJob(Map<String,Object> map) {
-        ZonedDateTime triggerDateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse((String)map
-                        .getOrDefault("startDate", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now())),
-                ZonedDateTime::from);
+        Instant triggerDateTime = DateTimeFormatter.ISO_INSTANT.parse((String)map
+                .getOrDefault("startDateTime", Instant.now().toString()), Instant::from);
         JobDataMap jobDataMap = map.entrySet().stream().collect(JobDataMap::new, (m, es) -> m.put(es.getKey(), es.getValue()), JobDataMap::putAll);
         String id = UUID.randomUUID().toString();
         JobDetail job = newJob(SimpleJob.class)
@@ -34,7 +33,7 @@ public class JobScheduler {
                 .build();
         Trigger trigger = newTrigger()
                 .withIdentity("T"+id)
-                .startAt(Date.from(triggerDateTime.toInstant()))
+                .startAt(Date.from(triggerDateTime))
                 .build();
         try {
             scheduler.scheduleJob(job, trigger);

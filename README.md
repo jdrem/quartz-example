@@ -26,11 +26,11 @@ Run an instance on port 8084:
 java -cp "lib/*" -Dserver.port=8084 net.remgant.quartz.Application
 ```
 ### Creating, Viewing and Deleting Events.
-Create an event. Needs a **starTime** to be specified, everything else will be passed to the Quartz job.
+Create an event. Specify a **startDateTime** for the event to be scheduled in the future. If absent, the event will be triggered immediately. Everything else will be passed to the Quartz job.
 ```bash
 curl -verbose -H "Content-Type: application/json" \
 http://localhost:8084/api/schedule/event \
--d '{"startDate":"2023-12-03T08:30:00-05:00", "a":"xyz","b":3.14159, "c":true}'
+-d '{"startDateTime":"2023-12-03T08:30:00-05:00", "a":"xyz","b":3.14159, "c":true}'
 ```
 Gives the result:
 ```json
