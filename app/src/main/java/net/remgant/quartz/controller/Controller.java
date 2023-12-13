@@ -1,6 +1,9 @@
 package net.remgant.quartz.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import net.remgant.quartz.DeactivateAccountEvent;
+import net.remgant.quartz.DeactivateDeviceEvent;
+import net.remgant.quartz.scheduler.EventScheduler;
 import net.remgant.quartz.scheduler.JobScheduler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +17,11 @@ import java.util.Map;
 public class Controller {
 
     final private JobScheduler jobScheduler;
+    final private EventScheduler eventScheduler;
 
-    public Controller(JobScheduler jobScheduler) {
+    public Controller(JobScheduler jobScheduler, EventScheduler eventScheduler) {
         this.jobScheduler = jobScheduler;
+        this.eventScheduler = eventScheduler;
     }
 
     @RequestMapping(value = "/schedules", method = RequestMethod.GET)
@@ -30,6 +35,17 @@ public class Controller {
         return ResponseEntity.ok(result);
     }
 
+    @RequestMapping(value="/schedule/deactivate/device", method = RequestMethod.POST)
+    public ResponseEntity<?> deactivateDevice(@RequestBody DeactivateDeviceEvent deactivateDeviceEvent) {
+        String result = eventScheduler.scheduleEvent(deactivateDeviceEvent);
+        return ResponseEntity.ok(result);
+    }
+
+    @RequestMapping(value="/schedule/deactivate/account", method = RequestMethod.POST)
+    public ResponseEntity<?> deactivateDevice(@RequestBody DeactivateAccountEvent deactivateAccountEvent) {
+        String result = eventScheduler.scheduleEvent(deactivateAccountEvent);
+        return ResponseEntity.ok(result);
+    }
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     private static class NotFoundException extends RuntimeException {}
 

@@ -1,8 +1,11 @@
 package net.remgant.quartz.scheduler;
 
 import lombok.extern.slf4j.Slf4j;
+import net.remgant.quartz.DoSomethingService;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -88,13 +91,19 @@ public class JobScheduler {
     }
 
     @Slf4j
-    static public class SimpleJob implements Job {
-
-        @SuppressWarnings("RedundantThrows")
+    static public class SimpleJob extends QuartzJobBean {
         @Override
-        public void execute(JobExecutionContext context) throws JobExecutionException {
+        protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+            ApplicationContext applicationContext;
+            try {
+                applicationContext = (ApplicationContext)context.getScheduler().getContext().get("applicationContext");
+            } catch (SchedulerException e) {
+                throw new JobExecutionException(e);
+            }
             log.info("Running job {}", context.getJobDetail().getKey());
             context.getMergedJobDataMap().forEach((key, value) -> log.info("Key: {}, value: {}", key, value));
+            DoSomethingService doSomethingService = applicationContext.getBean(DoSomethingService.class);
+            doSomethingService.doSomething();
         }
     }
 }
