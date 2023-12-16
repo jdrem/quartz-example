@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'quartz-example'
-include('app', 'list', 'utilities')
+include('scheduler')
