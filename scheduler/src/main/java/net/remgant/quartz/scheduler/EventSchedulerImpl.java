@@ -8,14 +8,17 @@ import net.remgant.quartz.DeactivateDeviceEvent;
 import net.remgant.quartz.DoSomethingService;
 import net.remgant.quartz.Event;
 import org.quartz.*;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -61,6 +64,58 @@ public class EventSchedulerImpl implements EventScheduler {
         return id;
     }
 
+    @Override
+    public boolean deleteEvent(String eventId) {
+        try {
+            if (scheduler.deleteJob(new JobKey(eventId, "DEFAULT"))) {
+                log.info("Job {} deleted", eventId);
+                return true;
+            } else {
+                log.info("Job {} not deleted, not found", eventId);
+                return false;
+            }
+        } catch (SchedulerException e) {
+            log.error("Deleting job {}", eventId, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<EventDetails> listAllEvents() {
+        Set<JobKey> jobKeySet;
+        try {
+            jobKeySet = scheduler.getJobKeys(GroupMatcher.anyGroup());
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+        @SuppressWarnings("unchecked")
+        List<EventDetails> resultList = (List<EventDetails>) jobKeySet.stream().map(jk -> {
+                    try {
+                        JobDetail jobDetail = scheduler.getJobDetail(jk);
+                        JobDataMap jobDataMap = scheduler.getJobDetail(jk).getJobDataMap();
+                        String objectClassName = jobDataMap.get("OBJECT_CLASS_NAME").toString();
+                        String objectData = jobDataMap.get("OBJECT_DATA").toString();
+                        Map<String, Object> objectAsMap = objectMapper.readValue(objectData, Map.class);
+                        @SuppressWarnings("unchecked")
+                        List<Trigger> triggerList = (List<Trigger>) scheduler.getTriggersOfJob(jobDetail.getKey());
+                        String nextFireTime = DateTimeFormatter.ISO_INSTANT.format(triggerList.get(0).getNextFireTime().toInstant());
+                        LocalDateTime triggerTime = triggerList.get(0).getNextFireTime().toInstant()
+                                .atZone(ZoneOffset.UTC)
+                                .toLocalDateTime();
+                        log.info("Job Name: {}, Next Fire Time: {}", jk.getName(), nextFireTime);
+                        EventDetails eventDetails = new EventDetails(jk.getName(), triggerTime, objectClassName, objectAsMap);
+                        return Optional.of(eventDetails);
+                    } catch (Exception e) {
+                        log.warn("getting job details for {}", jk.getName(), e);
+                    }
+                    return Optional.empty();
+                })
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        return resultList;
+    }
+
     public static class EventJob extends QuartzJobBean {
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -69,7 +124,7 @@ public class EventSchedulerImpl implements EventScheduler {
         protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
             ApplicationContext applicationContext;
             try {
-                applicationContext = (ApplicationContext)context.getScheduler().getContext().get("applicationContext");
+                applicationContext = (ApplicationContext) context.getScheduler().getContext().get("applicationContext");
             } catch (SchedulerException e) {
                 throw new JobExecutionException(e);
             }

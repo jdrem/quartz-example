@@ -3,12 +3,13 @@ package net.remgant.quartz.controller;
 import lombok.extern.slf4j.Slf4j;
 import net.remgant.quartz.DeactivateAccountEvent;
 import net.remgant.quartz.DeactivateDeviceEvent;
+import net.remgant.quartz.scheduler.EventDetails;
 import net.remgant.quartz.scheduler.EventScheduler;
-import net.remgant.quartz.scheduler.JobScheduler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -16,23 +17,10 @@ import java.util.Map;
 @Slf4j
 public class Controller {
 
-    final private JobScheduler jobScheduler;
     final private EventScheduler eventScheduler;
 
-    public Controller(JobScheduler jobScheduler, EventScheduler eventScheduler) {
-        this.jobScheduler = jobScheduler;
+    public Controller(EventScheduler eventScheduler) {
         this.eventScheduler = eventScheduler;
-    }
-
-    @RequestMapping(value = "/schedules", method = RequestMethod.GET)
-    public ResponseEntity<Map<String,Object>> schedules() {
-        Map<String,Object> result = jobScheduler.listAllSchedules();
-        return ResponseEntity.ok(result);
-    }
-    @RequestMapping(value="/schedule/event", method = RequestMethod.POST)
-    public ResponseEntity<Map<String,Object>> scheduleEvent(@RequestBody Map<String,Object> event) {
-        Map<String,Object> result = jobScheduler.scheduleJob(event);
-        return ResponseEntity.ok(result);
     }
 
     @RequestMapping(value="/schedule/deactivate/device", method = RequestMethod.POST)
@@ -52,10 +40,16 @@ public class Controller {
     @RequestMapping(value = "/schedule/event/{jobKey}", method = RequestMethod.DELETE)
     // Need to explicitly declare path variable name due to https://youtrack.jetbrains.com/issue/IDEA-339211
     public ResponseEntity<Map<String,Object>> deleteEvent(@PathVariable("jobKey") String jobKey) {
-        if (jobScheduler.deleteJob(jobKey))
+        if (eventScheduler.deleteEvent(jobKey))
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         else
             throw new NotFoundException();
+    }
+
+    @RequestMapping(value = "/schedule/events", method = RequestMethod.GET)
+    public ResponseEntity<List<EventDetails>> events() {
+       List<EventDetails> result = eventScheduler.listAllEvents();
+        return ResponseEntity.ok(result);
     }
 }
 
