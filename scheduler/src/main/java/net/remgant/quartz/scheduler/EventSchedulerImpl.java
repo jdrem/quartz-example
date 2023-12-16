@@ -13,7 +13,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Service;
 
-import javax.sql.DataSource;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -95,6 +94,7 @@ public class EventSchedulerImpl implements EventScheduler {
                         JobDataMap jobDataMap = scheduler.getJobDetail(jk).getJobDataMap();
                         String objectClassName = jobDataMap.get("OBJECT_CLASS_NAME").toString();
                         String objectData = jobDataMap.get("OBJECT_DATA").toString();
+                        @SuppressWarnings("unchecked")
                         Map<String, Object> objectAsMap = objectMapper.readValue(objectData, Map.class);
                         @SuppressWarnings("unchecked")
                         List<Trigger> triggerList = (List<Trigger>) scheduler.getTriggersOfJob(jobDetail.getKey());

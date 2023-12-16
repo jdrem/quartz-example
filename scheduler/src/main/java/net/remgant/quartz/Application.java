@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"net.remgant.quartz.controller", "net.remgant.quartz.scheduler","net.remgant.quartz.scheduler.impl"})
+@ComponentScan(basePackages = {"net.remgant.quartz.controller", "net.remgant.quartz.scheduler"})
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
