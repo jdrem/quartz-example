@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -47,8 +48,19 @@ public class Controller {
     }
 
     @RequestMapping(value = "/schedule/events", method = RequestMethod.GET)
-    public ResponseEntity<List<EventDetails>> events() {
-       List<EventDetails> result = eventScheduler.listAllEvents();
+    public ResponseEntity<List<EventDetails>> events(
+            @RequestParam(value = "dateFrom", required = false) LocalDateTime dateFrom,
+            @RequestParam(value = "dateTo", required = false) LocalDateTime dateTo) {
+        List<EventDetails> result;
+        if (dateFrom == null && dateTo == null) {
+            result = eventScheduler.listAllEvents();
+            return ResponseEntity.ok(result);
+        }
+        if (dateFrom == null)
+            dateFrom = LocalDateTime.MIN;
+        if (dateTo == null)
+            dateTo = LocalDateTime.MAX;
+        result = eventScheduler.listEvents(dateFrom, dateTo);
         return ResponseEntity.ok(result);
     }
 }
