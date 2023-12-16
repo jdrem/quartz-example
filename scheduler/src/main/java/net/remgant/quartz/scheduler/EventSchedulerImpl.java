@@ -118,8 +118,6 @@ public class EventSchedulerImpl implements EventScheduler {
 
     public static class EventJob extends QuartzJobBean {
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
         @Override
         protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
             ApplicationContext applicationContext;
@@ -130,6 +128,7 @@ public class EventSchedulerImpl implements EventScheduler {
             }
             log.info("Running job {}", context.getJobDetail().getKey());
             DoSomethingService doSomethingService = applicationContext.getBean(DoSomethingService.class);
+            ObjectMapper objectMapper = applicationContext.getBean(ObjectMapper.class);
             JobDataMap jobDataMap = context.getMergedJobDataMap();
             String eventClassName = jobDataMap.get("OBJECT_CLASS_NAME").toString();
             if (eventClassName.equals(DeactivateDeviceEvent.class.getName())) {
