@@ -13,7 +13,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +35,6 @@ public class EventSchedulerImpl implements EventScheduler {
 
     @Override
     public String scheduleEvent(Event event) {
-        Instant triggerDateTime = DateTimeFormatter.ISO_INSTANT.parse(event.getTriggerTime(), Instant::from);
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("OBJECT_CLASS_NAME", event.getClass().getName());
         try {
@@ -51,7 +49,7 @@ public class EventSchedulerImpl implements EventScheduler {
                 .build();
         Trigger trigger = newTrigger()
                 .withIdentity(id)
-                .startAt(Date.from(triggerDateTime))
+                .startAt(Date.from(event.getTriggerTime()))
                 .build();
         try {
             scheduler.scheduleJob(job, trigger);
@@ -59,7 +57,7 @@ public class EventSchedulerImpl implements EventScheduler {
             log.error("Error scheduling", e);
             throw new RuntimeException(e);
         }
-        log.info("job scheduled for {}, key {}, group {}", triggerDateTime, job.getKey().getName(), job.getKey().getGroup());
+        log.info("job scheduled for {}, key {}, group {}", event.getTriggerTime(), job.getKey().getName(), job.getKey().getGroup());
         return id;
     }
 
