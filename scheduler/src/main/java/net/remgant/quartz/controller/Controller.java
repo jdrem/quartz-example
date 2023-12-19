@@ -27,13 +27,13 @@ public class Controller {
     @RequestMapping(value="/schedule/deactivate/device", method = RequestMethod.POST)
     public ResponseEntity<?> deactivateDevice(@RequestBody DeactivateDeviceEvent deactivateDeviceEvent) {
         String result = eventScheduler.scheduleEvent(deactivateDeviceEvent);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(Map.of("id", result));
     }
 
     @RequestMapping(value="/schedule/deactivate/account", method = RequestMethod.POST)
     public ResponseEntity<?> deactivateDevice(@RequestBody DeactivateAccountEvent deactivateAccountEvent) {
         String result = eventScheduler.scheduleEvent(deactivateAccountEvent);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(Map.of("id", result));
     }
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     private static class NotFoundException extends RuntimeException {}

@@ -26,26 +26,28 @@ Run an instance on port 8084:
 java -cp "lib/*" -Dserver.port=8084 net.remgant.quartz.Application
 ```
 ### Creating, Viewing and Deleting Events.
-Create an event. Specify a **startDateTime** for the event to be scheduled in the future. If absent, the event will be triggered immediately. Everything else will be passed to the Quartz job.
+Create an event. Specify a **triggerTime** for the event to be scheduled in the future. If absent, the event will be triggered immediately. Everything else will be passed to the Quartz job.
 ```bash
-curl -verbose -H "Content-Type: application/json" \
-http://localhost:8084/api/schedule/event \
--d '{"startDateTime":"2023-12-03T08:30:00-05:00", "a":"xyz","b":3.14159, "c":true}'
+curl -H "Content-Type: application/json" \
+http://localhost:8084/api/schedule/deactivate/device \
+-d '{"triggerTime":"2023-12-18T19:54:00-05:00","deviceId":"123456"}'
 ```
 Gives the result:
 ```json
-{"group":"DEFAULT","name":"J5e245237-8304-498f-a256-3f67ba43b600"}
+{"id":"f3d0b3ed-0d5f-4d43-8695-4c475d926b8f"}
 ```
 See what's scheduled:
 ```bash
-curl http://localhost:8084/api/schedules
+curl http://localhost:8084/api/schedule/events
 ```
 Gives the result:
 ```json lines
-{"results":[{"jobName":"J5e245237-8304-498f-a256-3f67ba43b600","nextFireTime":"2023-12-03T12:20:00Z"}]}
+[{"id":"f3d0b3ed-0d5f-4d43-8695-4c475d926b8f","triggerTime":"2023-12-19T00:54:00",
+  "eventClass":"net.remgant.quartz.DeactivateDeviceEvent","eventImplementation":
+  {"triggerTime":1.70294724E9,"deviceId":"123456"}}]
 ```
 Delete a scheduled event:
 ```bash
-curl -X DELETE http://localhost:8084/schedule/event/J5e245237-8304-498f-a256-3f67ba43b600
+curl -X DELETE http://localhost:8084/api/schedule/event/a4b2e4df-a964-410a-8f89-8f19c7b1562c
 ```
 Returns a 204 and no data on success.
