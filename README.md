@@ -1,6 +1,15 @@
 ## Quartz Microservice Example
 
 ### Building and Running
+#### Build everything:
+```bash
+./gradlew clean build
+```
+#### Run with an external database
+You should do this if you want to persist the scheduled jobs
+or you want to have multiple instances sharing the work. You will need a database Like MySQL
+that properly handles locking.
+
 Start a docker instance of mysql:
 ```bash
 docker run --name mysql-quartz \
@@ -11,13 +20,14 @@ docker run --name mysql-quartz \
 -e MYSQL_PASSWORD=Welcome1 \
 -d mysql:latest
 ```
-Build everything:
-```bash
-./gradlew clean build
-```
 Run an instance on port 8084:
 ```bash
 SERVER_PORT=8084 DB_URL=jdbc:mysql://localhost:3306/quartz DB_USER=quser DB_PASSWORD=Welcome1 ./gradlew scheduler:run
+```
+#### Run with an embedded database
+Alternatively, you can use an embedded database like Hyper SQL:
+```bash
+SERVER_PORT=8084 DB_URL=jdbc:hsqldb:mem:quartz DB_USER=SA ./gradlew scheduler:run
 ```
 ### Creating, Viewing and Deleting Events.
 Create an event. Specify a **triggerTime** for the event to be scheduled in the future. If absent, the event will be triggered immediately. Everything else will be passed to the Quartz job.
