@@ -15,15 +15,9 @@ Build everything:
 ```bash
 ./gradlew clean build
 ```
-Untar the result:
-```bash
-cd app/build/distrubtions
-tar xf app.tar
-cd app
-```
 Run an instance on port 8084:
 ```bash
-java -cp "lib/*" -Dserver.port=8084 net.remgant.quartz.Application
+SERVER_PORT=8084 DB_URL=jdbc:mysql://localhost:3306/quartz DB_USER=quser DB_PASSWORD=Welcome1 ./gradlew scheduler:run
 ```
 ### Creating, Viewing and Deleting Events.
 Create an event. Specify a **triggerTime** for the event to be scheduled in the future. If absent, the event will be triggered immediately. Everything else will be passed to the Quartz job.
